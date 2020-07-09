@@ -1,4 +1,4 @@
-# 创建多线程方式
+# 1 创建多线程方式
 - 实现 Runnable 接口
 - 实现 Callable 接口
 - 继承 Thread 类
@@ -52,7 +52,7 @@ public static void main(String[] args) {
 实现接口会更好一些，因为：
 - Java 不支持多重继承，因此继承了 Thread 类就无法继承其它类，但是可以实现多个接口；
 - 类可能只要求可执行就行，继承整个 Thread 类开销过大。
-## 线程池
+## 2 线程池
 线程池的优点：
 - 降低资源消耗，通过重复利⽤已创建的线程降低线程创建和销毁造成的消耗。
 - 提高响应速度，当任务到达时，无需等待线程创建即可立即执行。
@@ -101,7 +101,7 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,
 流程图如下:   
 ![](ThreadPoolExcutor_Excute.png)
 
-## 线程间的协作
+## 3 线程间的协作
 ### join()
 join()方法的作用是等待**调用该方法的线程**在执行完 `run()` 方法后在执行后面的方法。
 

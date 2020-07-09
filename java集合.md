@@ -2,9 +2,9 @@
 容器主要包括 `Collection` 和 `Map` 两种，`Collection` 存储着对象的集合，而 `Map` 存储着键值对（两个对象）的映射表。
 
 [java容器](https://github.com/CyC2018/CS-Notes/blob/master/docs/notes/Java%20%E5%AE%B9%E5%99%A8.md)
-# Collection 
+# 1 Collection 
 
-   ![](Collection.png "Collection")
+   ![](pic/Collection.png "Collection")
 ## ArrayList
 [ArrayList介绍](https://www.cnblogs.com/skywang12345/p/3308556.html)
 1. 数组队列，相当于动态数组
@@ -43,8 +43,8 @@
 点点区别的
 ## TreeSet
 `TreeSet`（有序，唯⼀）： 红⿊树(⾃平衡的排序⼆叉树)
-# Map
-![](Map.png "Map")
+# 2 Map
+![](pic/Map.png "Map")
 ## HashMap
 [HashMap介绍](https://www.cnblogs.com/skywang12345/p/3310835.html)
 
@@ -52,7 +52,7 @@
 
 [HashMap介绍](https://zhuanlan.zhihu.com/p/30360734)
 
-![](HashMap.png "HashMap存储结构")
+![](pic/HashMap.png "HashMap存储结构")
 内部包含了一个 `Entry` 类型的数组 `table`。`Entry` 存储着键值对。它包含了四个字段，从 `next` 字段我们可以看出 `Entry` 是一个链表。即数组中的每个位置被当成一个桶，一个桶存放一个链表。`HashMap` 使用拉链法来解决冲突，同一个链表中存放哈希值和散列桶取模运算结果相同的 `Entry`。
 1. 继承于`AbstractMap`，实现了`Map、Cloneable、java.io.Serializable`接口。
 2. 默认大小`16`，即桶（bucket）数组的大小
