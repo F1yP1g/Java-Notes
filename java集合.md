@@ -39,18 +39,20 @@
 `HashSet`（⽆序，唯⼀）: 基于` HashMap `实现的，底层采⽤` HashMap `来保存元素
 ## LinkedHashSet
 `LinkedHashSet` 继承于` HashSet`，并且其内部是通过` LinkedHashMap `来实现
-的。有点类似于我们之前说的``LinkedHashMap `其内部是基于` HashMap `实现⼀样，不过还是有⼀
+的。有点类似于我们之前说的`LinkedHashMap `其内部是基于` HashMap `实现⼀样，不过还是有⼀
 点点区别的
 ## TreeSet
 `TreeSet`（有序，唯⼀）： 红⿊树(⾃平衡的排序⼆叉树)
 # 2 Map
 ![](pic/Map.png "Map")
 ## HashMap
-[HashMap介绍](https://www.cnblogs.com/skywang12345/p/3310835.html)
+[HashMap介绍-cnblog](https://www.cnblogs.com/skywang12345/p/3310835.html)
 
-[HashMap介绍](https://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/)
+[HashMap介绍-github](https://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/)
 
-[HashMap介绍](https://zhuanlan.zhihu.com/p/30360734)
+[HashMap介绍-知乎](https://zhuanlan.zhihu.com/p/30360734)
+
+[HahMap遍历方式](https://mp.weixin.qq.com/s/Zz6mofCtmYpABDL1ap04ow)
 
 ![](pic/HashMap.png "HashMap存储结构")
 内部包含了一个 `Entry` 类型的数组 `table`。`Entry` 存储着键值对。它包含了四个字段，从 `next` 字段我们可以看出 `Entry` 是一个链表。即数组中的每个位置被当成一个桶，一个桶存放一个链表。`HashMap` 使用拉链法来解决冲突，同一个链表中存放哈希值和散列桶取模运算结果相同的 `Entry`。
@@ -74,7 +76,7 @@
     6.  如果碰撞后为链表，添加到链表尾，并判断链表如果过长(大于等于TREEIFY_THRESHOLD，默认8)，就把链表转换成树结构；
     7.  数据 put 后，如果数据量超过threshold，就要resize。
 11. 与`HashTable`比较
-    1.  `HashTable`使用`synchronized`进行同步
+    1.  `HashTable`内部的方法使用`synchronized`进行同步
     2.  `HashMap` 可以插入键为 `null` 的 `Entry`，`hashTable`不支持`null`键。
     3.  `HashMap` 不能保证随着时间的推移 `Map` 中的元素次序是不变的。
     4.  `HashTable`默认初始化大小为`11`，每次扩容，容量变为`2n+1`，`HashMap`默认`16`扩容为`2`倍。
@@ -90,3 +92,43 @@
    1. 取消了`Segment`，采用`CAS`和`synchronized`保证并发安全。`CAS(原子操作)`失败时使用`sytnchronized`。
    2. 数组+链表/红⿊⼆叉树。
    3. `synchronized`只锁定当前链表/红黑树的**首节点**，这样只要hash不冲突就不会产生并发，提升效率N倍。
+# 3 问题
+## List, Set, Map 的区别
+- List：存储元素是有序的，可重复的
+- Set：元素是无序的、不可重复
+- Map：键值对，键是无序、不可重复的，值是无序的、可重复的。
+## ArrayList 和 Vector 区别
+1. ArrayList：List 的主要实现类，底层用 Object[] 存储，适用于频繁的查找工作，线程不安全
+2. Vector：List 的古老实现类，底层用 Object[] 存储，线程安全
+## 快速失败（fail-fast）
+Java 集合的一种错误检测机制。在使用迭代器对集合遍历时，在多线程下操作非安全失败（fail-safe）的集合类可能会触发 fail-fast 机制，导致抛出 `ConcurrentModificationException` 异常。另外，在单线程下如果遍历过程中对集合对象的内容进行了修改的话也会触发 fail-fast 机制。
+>增强 for 循环也是借助迭代器进行遍历
+
+原因：
+每当迭代器使用 `hasNext()/next()` 遍历下个元素之前，都会检测 `modCount` 变量是否为 `expectedModeCount` 值，是的话就返回遍历，否则抛出异常终止遍历。如果在遍历期间修改元素，就会改变 `mdCount` 值，从而抛出异常。
+>通过 `Iterator` 的方法修改集合会修改 `expectedCount` 的值，不会抛出异常。
+
+示例：
+```java
+   List<String> list = new ArrayList<>();
+   list.add("1");
+   list.add("2");
+   //正例
+   Iterator<String> iterator = list.iterator();
+   while(iterator.hasNext()){
+      String item = iterator.next();
+      if(删除元素的条件){
+         iterator.remove();
+      }
+   }
+   //反例
+   for(String item : list){
+      if("1".equals(item)){
+         list.remove(item);
+      }
+   }
+```
+例如：HashMap，Vector，ArrayList,HashSet
+## 安全失败（fail-safe）
+采用 fail-safe 的集合容器，遍历时是先复制原有集合内容，在拷贝集合上进行遍历，因此，在遍历过程中对原集合所作的修改并不能被迭代器检测到，因此不会抛出异常。
+例如：CopyOnWriteArrayList，ConcurrentHashMap
