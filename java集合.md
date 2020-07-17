@@ -132,3 +132,7 @@ Java 集合的一种错误检测机制。在使用迭代器对集合遍历时，
 ## 安全失败（fail-safe）
 采用 fail-safe 的集合容器，遍历时是先复制原有集合内容，在拷贝集合上进行遍历，因此，在遍历过程中对原集合所作的修改并不能被迭代器检测到，因此不会抛出异常。
 例如：CopyOnWriteArrayList，ConcurrentHashMap
+
+## 线程不安全的集合
+线程不安全：`ArrayList` , `LinkedList` , `HashMap` , `HashSet` , `TreeSet` , `TreeMap` , `PriorityQueue` .
+

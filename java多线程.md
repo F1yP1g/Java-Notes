@@ -79,8 +79,7 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,
 3. `workQueue`：阻塞队列，当新任务来的时候会先判断当前运⾏的线程数量是否达到核⼼线程数，如果达到的话，新任务就会被存放在队列中。
 4. `keepAliveTime`: 当池中的线程数量大于 `corePoolSize` 时，核心线程外的线程销毁前等待的时间。
 5. `threadFactory`：`excutor` 创建线程时用到
-6. `handler`：饱和策略，如果当前同时运⾏的线程数量达到最⼤线程数量并且队列也已经被放满了任
-时， ThreadPoolTaskExecutor 定义的⼀些策略:
+6. `handler`：饱和策略，如果当前同时运⾏的线程数量达到最⼤线程数量并且队列也已经被放满了任务时， ThreadPoolTaskExecutor 定义的⼀些策略:
     - 抛出异常，拒绝新任务的处理；
     - 调用自己的线程执行任务，如果程序可以承受延迟并且不能丢弃任何一个任务请求时使用；
     - 不处理，直接丢弃；
@@ -136,7 +135,9 @@ Java 早期版本中，synchronized 属于重量级锁，效率低下，JDK 1.6 
     public class Singleton{
         //volatile 关键字修饰很重要
         private volatile static Singleton uniqueInstance;
+        //构造函数私有化
         private Singleton(){};
+        //静态方法
         public static Singleton getUniqueInstance(){
             //首先判断对象是否已经实例过
             if(uniqueInstance == null){
