@@ -64,7 +64,7 @@ public static void main(String[] args) {
 
 ###  1 excute() 和 sumbit() 方法的区别
 1. excute() 用于提交不需要返回值的任务，无法判断任务是否被线程池执行成功。
-2. sumbit*()用于需要返回值的任务。线程池会返回一个 `Future` 对象。sumbit() 最终调用的还是 excute()。
+2. sumbit()用于需要返回值的任务。线程池会返回一个 `Future` 对象。sumbit() 最终调用的还是 excute()。
 ### 2 ThreadPoolExcutor 构造函数
 `ThreadPoolExcutor` 有四个构造方法，以下为最长的，剩下三个指定了一些默认值：
 ```java
@@ -171,3 +171,61 @@ Java 早期版本中，synchronized 属于重量级锁，效率低下，JDK 1.6 
 通常情况下，我们创建的变量是可以被任何一个线程访问并修改的。如果想实现每一个线程都有自己的专属本地变量该如何解决呢？ JDK 中提供的 ThreadLocal 类正是为了解决这样的问题。 ThreadLocal 类主要解决的就是让每个线程绑定自己的值，可以将 ThreadLocal 类形象的比喻成存放数据的盒子，盒子中可以存储每个线程的私有数据。
 
 如果你创建了一个 ThreadLocal 变量，那么访问这个变量的每个线程都会有这个变量的本地副本，这也是ThreadLocal 变量名的由来。他们可以使用 get（） 和 set（） 方法来获取默认值或将其值更改为当前线程所存的副本的值，从而避免了线程安全问题。
+
+# 4 CAS
+比较并交换，,CPU 并发原语，操作前检查内存中的值与自己期望的值是否相等，相等则操作。
+```java
+    //原子类
+    AtomicInteger atomicInteger = new AtomicInteger(1);
+    //比较并交换操作，先检查值是否为1，是则将 atomicInteger 的值设为2.
+	atomicInteger.compareAndSet(1, 2);
+```
+`compareAndSet` 在 `AtomicInteger` 的源码如下：
+```java
+    private static final jdk.internal.misc.Unsafe U = jdk.internal.misc.Unsafe.getUnsafe();
+    private static final long VALUE = U.objectFieldOffset(AtomicInteger.class, "value");
+
+    //函数，可发现调用的 Unsafe类下的方法。
+    public final boolean compareAndSet(int expectedValue, int newValue) {
+        return U.compareAndSetInt(this, VALUE, expectedValue, newValue);
+    }
+```
+**`Unsafe`** 类是 CAS 的底层实现。
+```java
+    //实现i++的功能的底层源码。
+    //没锁，单纯的while循环
+    public final int getAndAddInt(Object o, long offset, int delta) {
+        int v;
+        do {
+            v = getIntVolatile(o, offset);//获取对象o的地址offset内存偏移量下的值，给v
+        } while (!weakCompareAndSetInt(o, offset, v, v + delta));//如果v 的值等于o在ofset的值，那么v=v+delta，并返回true退出循环，否则继续循环知道更新完成
+        return v;
+    }
+```
+CAS 的缺点：
+1. 循环时间长，开销大
+2. 只能保证一个共享变量的原子操作
+3. ABA问题
+
+ABA 问题
+
+相当于写覆盖，假设有一个变量值为 A，线程 T1 和 T2。
+T1 和 T2 都拿到了 A, 在 T1 还没反应过来时， T2 将 A 修改为 B, 然后又修改成 A。 此时 T1 比较自己拿的值和内存中的值发现都是 A，他就认为没人动过，则操作。 
+
+ABA 解决办法：
+
+AtomicStampedReference 版本号原子引用，加了版本号用于识别，每次修改值都有修改版本号。虽然值可能一样，但版本号不同则不行。
+```java
+//定义整型的时间戳源自引用，默认值 10，初始版本号 1；
+    AtomicStampedReference<Integer> atomicStampedReference = new AtomicStampedReference<Integer>(10, 1);
+    //获取当前的版本号
+	int stamp = atomicStampedReference.getStamp();
+    //CAS 期望值是1，要修改的新值是2，期望的时间戳是 stamp，更新后的时间戳是2.
+   atomicStampedReference.compareAndSet(1, 2, stamp, 2);
+```
+
+# java锁
+## 公平锁和非公平锁
+公平锁：多个线程按照申请锁的顺序来获取锁，类似排队打饭
+
+非公平锁：可能后申请的线程比先申请的线程优先获取锁，在高并发下有可能造成优先级反转或饥饿现象
