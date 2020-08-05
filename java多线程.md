@@ -53,6 +53,10 @@ public static void main(String[] args) {
 - Java 不支持多重继承，因此继承了 Thread 类就无法继承其它类，但是可以实现多个接口；
 - 类可能只要求可执行就行，继承整个 Thread 类开销过大。
 ## 2 线程池
+线程池做的工作主要是控制运行的线程的数量，处理过程中将任务放入队列，然后在线程创建后启动这些任务，如果线程数量超过了最大数量超出数量的线排队，等其它线程执行完毕，再从队列中取出任务来执行。
+
+他的主要特点为：线程复用：控制最大并发数；管理线程
+
 线程池的优点：
 - 降低资源消耗，通过重复利⽤已创建的线程降低线程创建和销毁造成的消耗。
 - 提高响应速度，当任务到达时，无需等待线程创建即可立即执行。
@@ -68,8 +72,10 @@ public static void main(String[] args) {
 ### 2 ThreadPoolExcutor 构造函数
 `ThreadPoolExcutor` 有四个构造方法，以下为最长的，剩下三个指定了一些默认值：
 ```java
-public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize, 
-    long keepAliveTime,TimeUnit unit,
+public ThreadPoolExecutor(int corePoolSize,
+    int maximumPoolSize, 
+    long keepAliveTime,
+    TimeUnit unit,
     BlockingQueue<Runnable> workQueue,
     ThreadFactory threadFactory,RejectedExecutionHandler handler);
 ```
@@ -126,8 +132,29 @@ join()方法的作用是等待**调用该方法的线程**在执行完 `run()` �
 # 2 synchronized 关键字
 1. **修饰实例方法**: 作用于当前对象实例加锁，进入同步代码前要获得当前对象实例的锁
 2. **修饰静态方法**: 也就是给当前类加锁，会作用于类的所有对象实例，因为静态成员不属于任何一个实例对象，是类成员（ static 表明这是该类的一个静态资源，不管new了多少个对象，只有一份）。所以如果一个线程 A 调用一个实例对象的非静态 synchronized 方法，而线程 B 需要调用这个实例对象所属类的静态 synchronized 方法，是允许的，不会发生互斥现象，因为访问静态 synchronized 方法占用的锁是当前类的锁，而访问非静态 synchronized 方法占用的锁是当前实例对象锁。
-3. **修饰代码块**: 指定加锁对象，对给定对象加锁，进入同步代码库前要获得给定对象的锁。
+3. **修饰代码块**: 指定加锁对象，对给定对象加锁，进入同步代码块前要获得给定对象的锁。
 
+```java
+    public class Test{
+        private final Test instance = new Test();
+
+        //对成员函数加锁，必须获得该类的实例对象的锁才能进入同步块
+        public synchronized void fun1(){}
+
+        //对静态方法加锁，必须获得类的锁才能进入代码块
+        public static synchronized fun2(){}
+
+        public void method(){
+
+            //执行前必须获得Test类的锁
+            synchronized (Test.class){}
+
+            //执行前必须获得实例对象的锁
+            synchronized (instance){}
+        }
+
+    }
+```
 Java 早期版本中，synchronized 属于重量级锁，效率低下，JDK 1.6 之后官方从 JVM 层面实现了较大优化，所以现在 synchronized 锁的效率也不错，引入的优化只要有自旋锁、适应性自旋锁、锁消除、锁粗化、偏向锁、轻量级锁等技术来减少开销。
 
 双重校验锁实现对象单例（线程安全）：
@@ -166,6 +193,8 @@ Java 早期版本中，synchronized 属于重量级锁，效率低下，JDK 1.6 
 2. 多线程访问 volatile 关键字不会发生阻塞，而 synchronized 关键字可能会发生阻塞。
 3. volatile 关键字能保证数据的可见性，但不能保证数据的原子性。synchronized 关键字两者都能保证。
 4. volatile 关键字主要用于解决变量在多个线程之间的可见性，而 synchronized 关键字解决的是多个线程之间访问资源的同步性。
+## stynchronized 和 lock 的区别
+![](pic/synchronized和lock区别.png)
 
 # 3 ThreadLocal
 通常情况下，我们创建的变量是可以被任何一个线程访问并修改的。如果想实现每一个线程都有自己的专属本地变量该如何解决呢？ JDK 中提供的 ThreadLocal 类正是为了解决这样的问题。 ThreadLocal 类主要解决的就是让每个线程绑定自己的值，可以将 ThreadLocal 类形象的比喻成存放数据的盒子，盒子中可以存储每个线程的私有数据。
